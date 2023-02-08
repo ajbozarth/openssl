@@ -3755,6 +3755,37 @@ long ssl3_ctrl(SSL *s, int cmd, long larg, void *parg)
             return (int)s->ext.peer_ecpointformats_len;
         }
 #endif
+    case SSL_CTRL_GET_OQS_KEM_CURVE_ID:
+        {
+            if (s->server || s->session == NULL || s->s3.tmp.oqs_kem_curve_id == 0) {
+                return 0;
+            } else {
+                return s->s3.tmp.oqs_kem_curve_id;
+            }
+        }
+    case SSL_CTRL_GET_USED_GROUP_ID:
+        {
+            if (s == NULL) return 0;
+            if (s->server || s->session == NULL) return 0;
+            return s->s3.tmp.oqs_kem_curve_id ? s->s3.tmp.oqs_kem_curve_id : s->s3.group_id;
+        }
+    case SSL_CTRL_GET_USED_GROUP_NID:
+        {
+            if (s == NULL) return 0;
+            if (s->server || s->session == NULL) return 0;
+            TLS_GROUP_INFO *tls_group_info =
+                    tls1_group_id_lookup(s->ctx, s->s3.tmp.oqs_kem_curve_id ?
+                                         s->s3.tmp.oqs_kem_curve_id : s->s3.group_id);
+            return tls_group_info == NULL ? 0 : tls_group_info->group_id;
+        }
+    case SSL_CTRL_GET_USED_SIGALG_NID:
+        {
+            if (s == NULL) return 0;
+            if (s->server || s->session == NULL) return 0;
+            if (s->s3.tmp.peer_sigalg->sig == EVP_PKEY_EC)
+                return s->s3.tmp.peer_sigalg->sigandhash;
+            return s->s3.tmp.peer_sigalg->sig;
+        }
 
     default:
         break;

@@ -1818,6 +1818,8 @@ int tls_parse_stoc_key_share(SSL *s, PACKET *pkt, unsigned int context, X509 *x,
             /* SSLfatal() already called */
             return 0;
         }
+        /* We save the group_id, so it can be printed out later in s_client's output. */
+        s->s3.tmp.oqs_kem_curve_id = group_id;
     }
 #endif
 
